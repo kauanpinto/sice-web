@@ -2,11 +2,7 @@ import { apiFetch, ApiError } from "../services/api.service.js";
 
 function fill(form, settings) {
   form.name.value = settings.name ?? "";
-  form.timezone.value = settings.timezone ?? "America/Bahia";
   form.voltageV.value = settings.voltageV ?? 127;
-  form.onCurrentA.value = settings.onCurrentA ?? 0.1;
-  form.lightThreshold.value = settings.lightThreshold ?? 2048;
-  form.darkWhen.value = settings.darkWhen ?? "high";
   form.graceMinutes.value = settings.graceMinutes ?? 10;
   form.reminderMinutes.value = settings.reminderMinutes ?? 30;
   form.highUsageKwhDay.value = settings.highUsageKwhDay ?? 5;
@@ -42,11 +38,7 @@ function toPayload(form) {
 
   return {
     name: d.get("name"),
-    timezone: d.get("timezone"),
     voltageV: Number(d.get("voltageV")),
-    onCurrentA: Number(d.get("onCurrentA")),
-    lightThreshold: Number(d.get("lightThreshold")),
-    darkWhen: d.get("darkWhen"),
     schedule: {
       mode: d.get("scheduleMode"),
       start: d.get("scheduleStart"),
@@ -74,7 +66,7 @@ export async function initSettings(deviceId) {
     .forEach((r) => r.addEventListener("change", () => toggleWindow(form)));
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    
+
     const btn = form.querySelector('[data-role="settings-btn"]');
     const errorEl = form.querySelector('[data-role="settings-error"]');
     const okEl = form.querySelector('[data-role="settings-success"]');

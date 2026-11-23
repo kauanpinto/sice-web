@@ -72,20 +72,7 @@
             <legend>Equipamento</legend>
             <label>Nome<input name="name" required /></label>
             <label
-              >Fuso horário<input
-                name="timezone"
-                value="America/Bahia"
-                required
-            /></label>
-            <label
               >Tensão (V)<input name="voltageV" type="number" step="1" required
-            /></label>
-            <label
-              >Corrente p/ considerar ligado (A)<input
-                name="onCurrentA"
-                type="number"
-                step="0.01"
-                required
             /></label>
           </fieldset>
           <fieldset>
@@ -105,16 +92,7 @@
             <span class="error" data-error-for="schedule"></span>
           </fieldset>
           <fieldset>
-            <legend>Limiares</legend>
-            <label
-              >Limiar de luz<input name="lightThreshold" type="number" required
-            /></label>
-            <label
-              >Escuro quando<select name="darkWhen">
-                <option value="high">Luz alta = escuro</option>
-                <option value="low">Luz baixa = escuro</option>
-              </select></label
-            >
+            <legend>Tempos e limites</legend>
             <label
               >Carência (min)<input name="graceMinutes" type="number" required
             /></label>
