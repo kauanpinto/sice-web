@@ -1,5 +1,5 @@
 export const config = {
-  apiBaseUrl: "http://localhost:3000",
+  apiBaseUrl: "https://sice-api-yyna.onrender.com",
   firebaseConfig: {
     apiKey: "AIzaSyDc4936nxPaiPYErck15uHwa1-vvghWwKw",
     authDomain: "sice-48e9c.firebaseapp.com",
