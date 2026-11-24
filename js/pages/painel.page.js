@@ -14,6 +14,49 @@ import { initCost } from "../ui/cost.ui.js";
 import { initAlerts } from "../ui/alerts.ui.js";
 
 let unsub = null;
+let pushEnabled = true;
+
+const pushButton = document.querySelector('[data-role="push-btn"]');
+const pushStatus = document.querySelector('[data-role="push-status"]');
+const logoutButton = document.querySelector('[data-role="logout-btn"]');
+
+pushButton.textContent = "Desativar alertas";
+pushStatus.textContent = "Alertas ativados.";
+
+pushButton.addEventListener("click", async () => {
+  pushButton.disabled = true;
+
+  try {
+    if (pushEnabled) {
+      await pushService.disablePush();
+
+      pushEnabled = false;
+      pushButton.textContent = "Ativar alertas";
+      pushStatus.textContent = "Alertas desativados.";
+    } else {
+      await pushService.enablePush((notif) => {
+        pushStatus.textContent = notif.body;
+      });
+
+      pushEnabled = true;
+      pushButton.textContent = "Desativar alertas";
+      pushStatus.textContent = "Alertas ativados.";
+    }
+  } catch {
+    pushStatus.textContent = "Não foi possível alterar os alertas.";
+  } finally {
+    pushButton.disabled = false;
+  }
+});
+
+logoutButton.addEventListener("click", async () => {
+  if (unsub) {
+    unsub();
+    unsub = null;
+  }
+
+  await authService.logout();
+});
 
 authService.onUserChange(async (user) => {
   if (!user) {
@@ -31,6 +74,8 @@ authService.onUserChange(async (user) => {
   initCost(deviceId);
   initAlerts(deviceId);
 
+  if (unsub) unsub();
+
   unsub = onValue(ref(db, `devices/${deviceId}/status`), (snap) => {
     const status = snap.val();
 
@@ -39,31 +84,4 @@ authService.onUserChange(async (user) => {
     renderStatus(status);
     command.update(status.command);
   });
-
-  document
-    .querySelector('[data-role="logout-btn"]')
-    .addEventListener("click", async () => {
-      if (unsub) unsub();
-      await authService.logout();
-    });
-  document
-    .querySelector('[data-role="push-btn"]')
-    .addEventListener("click", async (e) => {
-      const btn = e.currentTarget;
-      btn.disabled = true;
-
-      try {
-        await pushService.enablePush((notif) => {
-          document.querySelector('[data-role="push-status"]').textContent =
-            notif.body;
-        });
-
-        btn.textContent = "Alertas ativados";
-      } catch {
-        document.querySelector('[data-role="push-status"]').textContent =
-          "Alertas desativados. Ative nas configurações do navegador.";
-      } finally {
-        btn.disabled = false;
-      }
-    });
 });
