@@ -38,12 +38,17 @@ export function renderStatus(status) {
   const badge = document.querySelector('[data-role="offline-badge"]');
 
   if (!status.online) {
-    const min = Math.max(
+    const totalMin = Math.max(
       1,
       Math.round((Date.now() - status.lastSeenAt) / 60000),
     );
 
-    badge.textContent = `offline há ${min} min`;
+    if (totalMin < 60) {
+      badge.textContent = `offline há ${totalMin} min`;
+    } else {
+      const hours = Math.floor(totalMin / 60);
+      badge.textContent = `offline há ${hours}h`;
+    }
     badge.hidden = false;
   } else {
     badge.hidden = true;
