@@ -84,9 +84,14 @@ export async function initSettings(deviceId) {
       okEl.textContent = "Salvo!";
     } catch (err) {
       if (err instanceof ApiError && err.fields) {
-        const first = Object.values(err.fields)[0];
-        errorEl.textContent = first;
-      } else errorEl.textContent = "Erro ao salvar. Tente de novo.";
+        const [field, message] = Object.entries(err.fields)[0] ?? [];
+
+        errorEl.textContent = field
+          ? `${field}: ${message}`
+          : "Erro ao salvar. Tente de novo.";
+      } else {
+        errorEl.textContent = "Erro ao salvar. Tente de novo.";
+      }
     } finally {
       btn.disabled = false;
     }
