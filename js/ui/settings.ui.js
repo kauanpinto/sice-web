@@ -10,12 +10,13 @@ function fill(form, settings) {
   const mode = settings.schedule?.mode ?? "window";
 
   form.querySelector(`[name="scheduleMode"][value="${mode}"]`).checked = true;
-  form.scheduleStart.value = settings.schedule?.start ?? "22:00";
-  form.scheduleEnd.value = settings.schedule?.end ?? "06:00";
+  form.scheduleStart.value = settings.schedule?.start ?? "06:00";
+  form.scheduleEnd.value = settings.schedule?.end ?? "22:00";
   form.alertAbsence.checked = settings.alerts?.absence ?? true;
   form.alertDark.checked = settings.alerts?.dark ?? true;
   form.alertOutsideSchedule.checked = settings.alerts?.outsideSchedule ?? true;
   form.alertHighUsage.checked = settings.alerts?.highUsage ?? true;
+
   toggleWindow(form);
 }
 
@@ -56,24 +57,90 @@ function toPayload(form) {
   };
 }
 
+function getErrorMessage(error) {
+  if (!(error instanceof ApiError)) {
+    return "Não foi possível salvar as configurações. Tente novamente.";
+  }
+
+  if (error.status === 0) {
+    return "Não foi possível conectar ao servidor. Verifique sua conexão.";
+  }
+
+  if (error.status === 401) {
+    return "Sua sessão expirou. Entre novamente.";
+  }
+
+  if (error.status === 404) {
+    return "Dispositivo não encontrado.";
+  }
+
+  if (error.status === 429) {
+    return "Muitas tentativas. Aguarde um pouco e tente novamente.";
+  }
+
+  if (error.status >= 500) {
+    return "Estamos com instabilidade no servidor. Tente novamente em instantes.";
+  }
+
+  if (error.fields) {
+    const field = Object.keys(error.fields)[0];
+
+    const messages = {
+      name: "Informe um nome válido para o equipamento.",
+      voltageV: "Informe uma tensão entre 100 e 240 volts.",
+      "schedule.mode": "Selecione um modo de funcionamento.",
+      "schedule.start": "Informe um horário de início válido.",
+      "schedule.end": "Informe um horário de término válido.",
+      schedule: "Configure um intervalo de horários válido.",
+      "alerts.absence": "Revise a configuração do alerta de ausência.",
+      "alerts.dark": "Revise a configuração do alerta de escuridão.",
+      "alerts.outsideSchedule":
+        "Revise a configuração do alerta fora do horário.",
+      "alerts.highUsage": "Revise a configuração do alerta de consumo.",
+      graceMinutes: "O tempo de tolerância deve estar entre 1 e 120 minutos.",
+      reminderMinutes:
+        "O intervalo do lembrete deve estar entre 5 e 240 minutos.",
+      highUsageKwhDay: "Informe um limite de consumo maior que zero.",
+    };
+
+    return (
+      messages[field] ?? "Verifique os dados informados e tente novamente."
+    );
+  }
+
+  return "Não foi possível salvar as configurações. Verifique os dados e tente novamente.";
+}
+
 export async function initSettings(deviceId) {
   const form = document.querySelector('[data-role="settings-form"]');
   const settings = await apiFetch(`/devices/${deviceId}/settings`);
 
   fill(form, settings);
+
   form
     .querySelectorAll('[name="scheduleMode"]')
-    .forEach((r) => r.addEventListener("change", () => toggleWindow(form)));
+    .forEach((radio) =>
+      radio.addEventListener("change", () => toggleWindow(form)),
+    );
+
+  const btn = form.querySelector('[data-role="settings-btn"]');
+  const errorEl = form.querySelector('[data-role="settings-error"]');
+  const okEl = form.querySelector('[data-role="settings-success"]');
+
+  function clearFeedback() {
+    errorEl.textContent = "";
+    okEl.textContent = "";
+  }
+
+  form.addEventListener("input", clearFeedback);
+  form.addEventListener("change", clearFeedback);
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const btn = form.querySelector('[data-role="settings-btn"]');
-    const errorEl = form.querySelector('[data-role="settings-error"]');
-    const okEl = form.querySelector('[data-role="settings-success"]');
-
-    errorEl.textContent = "";
-    okEl.textContent = "";
+    clearFeedback();
     btn.disabled = true;
+    btn.textContent = "Salvando...";
 
     try {
       await apiFetch(`/devices/${deviceId}/settings`, {
@@ -81,19 +148,12 @@ export async function initSettings(deviceId) {
         body: toPayload(form),
       });
 
-      okEl.textContent = "Salvo!";
-    } catch (err) {
-      if (err instanceof ApiError && err.fields) {
-        const [field, message] = Object.entries(err.fields)[0] ?? [];
-
-        errorEl.textContent = field
-          ? `${field}: ${message}`
-          : "Erro ao salvar. Tente de novo.";
-      } else {
-        errorEl.textContent = "Erro ao salvar. Tente de novo.";
-      }
+      okEl.textContent = "Configurações salvas com sucesso!";
+    } catch (error) {
+      errorEl.textContent = getErrorMessage(error);
     } finally {
       btn.disabled = false;
+      btn.textContent = "Salvar configurações";
     }
   });
 }

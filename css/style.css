@@ -573,14 +573,34 @@ input[type="checkbox"] {
   outline-offset: 2px;
 }
 
+.error,
+.success {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
 .error {
   color: var(--color-state-alert);
-  font-size: var(--text-sm);
+  background: var(--color-state-alert-bg);
+  border-color: var(--color-state-alert);
 }
 
 .success {
   color: var(--color-state-on);
-  font-size: var(--text-sm);
+  background: hsl(65 100% 8%);
+  border-color: var(--color-accent);
+}
+
+.error:empty,
+.success:empty {
+  display: none;
 }
 
 .login-container {
