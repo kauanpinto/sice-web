@@ -2,46 +2,76 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#121212" />
     <title>SICE - Painel</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Space+Grotesk:wght@700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Space+Grotesk:wght@700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./css/style.css" />
   </head>
   <body data-page="painel">
-    <header class="navbar">
-      <a class="logo" href="./painel.html">SICE</a>
-      <div class="nav-btns">
-        <button class="btn btn-ghost" data-role="push-btn">
+    <header class="topbar">
+      <a class="brand" href="./painel.html" aria-label="SICE, início">SICE</a>
+      <button class="btn btn-ghost btn-sm" type="button" data-role="logout-btn">
+        Sair
+      </button>
+    </header>
+
+    <main hidden data-role="main">
+      <h1 class="sr-only">Painel do equipamento</h1>
+
+      <div data-role="alerts-list"></div>
+
+      <section class="push" aria-label="Alertas no celular">
+        <p>Receba alertas no celular, mesmo com o painel fechado.</p>
+        <button class="btn btn-sm" type="button" data-role="push-btn">
           Ativar alertas
         </button>
-        <button class="btn btn-ghost" data-role="logout-btn">Sair</button>
-      </div>
-    </header>
-    <main hidden data-role="main">
-      <div data-role="alerts-list"></div>
-      <p role="status" data-role="push-status"></p>
-      <section class="status-grid">
-        <section class="card" data-block="equipment" data-state="off">
+        <p class="hint" role="status" data-role="push-status"></p>
+      </section>
+
+      <section class="status-grid" aria-label="Estado do equipamento">
+        <section
+          class="card tile tile--hero"
+          data-block="equipment"
+          data-state="unknown"
+        >
           <h2>Equipamento</h2>
           <span class="offline-badge" data-role="offline-badge" hidden></span>
           <span class="value" data-role="value">--</span>
-          <span data-role="power">-- W</span>
+          <span class="detail" data-role="power">-- W</span>
         </section>
-        <section class="card" data-block="presence" data-state="off">
+
+        <section class="card tile" data-block="presence" data-state="unknown">
           <h2>Presença</h2>
           <span class="value" data-role="value">--</span>
         </section>
-        <section class="card" data-block="ambient" data-state="off">
+
+        <section class="card tile" data-block="ambient" data-state="unknown">
           <h2>Ambiente</h2>
           <span class="value" data-role="value">--</span>
         </section>
-        <section class="card" data-block="command" data-state="off">
-          <h2>Comando</h2>
+
+        <section
+          class="card tile tile--command"
+          data-block="command"
+          data-state="off"
+        >
+          <div class="tile-text">
+            <h2>Comando</h2>
+            <span class="detail" role="status" data-role="command-status">
+              Comando: desligado
+            </span>
+          </div>
           <button
+            type="button"
             role="switch"
             aria-checked="false"
             class="switch"
@@ -49,92 +79,155 @@
           >
             Ligar
           </button>
-          <span data-role="command-status">Comando: desligado</span>
         </section>
       </section>
 
-      <section class="card">
-        <h2>Energia</h2>
-        <div class="chart" data-role="energy-chart"></div>
-        <span data-role="energy-total">-- kWh hoje</span>
-      </section>
+      <div class="insights">
+        <section class="card" aria-labelledby="energy-title">
+          <div class="card-head">
+            <h2 id="energy-title">Energia por hora</h2>
+            <span class="detail" data-role="energy-total">-- kWh hoje</span>
+          </div>
+          <div
+            class="chart"
+            data-role="energy-chart"
+            role="img"
+            aria-label="Consumo de energia por hora, hoje"
+          ></div>
+          <div class="chart-axis" aria-hidden="true">
+            <span>0h</span><span>6h</span><span>12h</span><span>18h</span
+            ><span>23h</span>
+          </div>
+        </section>
 
-      <section class="card">
-        <h2>Custo do mês</h2>
-        <span class="value" data-role="cost-value">R$ --</span>
-        <span data-role="cost-detail">-- kWh • projeção R$ --</span>
-      </section>
+        <section class="card" aria-labelledby="cost-title">
+          <h2 id="cost-title">Custo do mês</h2>
+          <span class="value value--accent" data-role="cost-value">R$ --</span>
+          <span class="detail" data-role="cost-detail">
+            -- kWh • projeção R$ --
+          </span>
+          <p class="hint">Estimativa, sem bandeiras tarifárias.</p>
+        </section>
+      </div>
 
-      <section class="card">
-        <h2>Configuração</h2>
+      <details class="card settings">
+        <summary>
+          <h2>Configurações</h2>
+        </summary>
+
         <form data-role="settings-form">
-          <fieldset>
+          <fieldset class="fields">
             <legend>Equipamento</legend>
-            <label>Nome<input name="name" required /></label>
-            <label
-              >Tensão (V)<input name="voltageV" type="number" step="1" required
-            /></label>
+            <label>
+              Nome
+              <input name="name" autocomplete="off" required />
+            </label>
+            <label>
+              Tensão da tomada (V)
+              <input
+                name="voltageV"
+                type="number"
+                inputmode="numeric"
+                step="1"
+                required
+              />
+            </label>
           </fieldset>
+
           <fieldset>
             <legend>Funcionamento</legend>
-            <label class="check-row"
-              ><input type="radio" name="scheduleMode" value="always" />
-              24h</label
-            >
-            <label class="check-row"
-              ><input type="radio" name="scheduleMode" value="window" checked />
-              Janela</label
-            >
-            <div data-role="window-fields">
-              <label>Início<input name="scheduleStart" type="time" /></label>
-              <label>Fim<input name="scheduleEnd" type="time" /></label>
+            <div class="segmented">
+              <label>
+                <input type="radio" name="scheduleMode" value="always" />
+                24 horas
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="scheduleMode"
+                  value="window"
+                  checked
+                />
+                Janela
+              </label>
             </div>
-            <span class="error" data-error-for="schedule"></span>
+            <div class="fields" data-role="window-fields">
+              <label>
+                Início
+                <input name="scheduleStart" type="time" />
+              </label>
+              <label>
+                Fim
+                <input name="scheduleEnd" type="time" />
+              </label>
+            </div>
+            <p class="hint">
+              No modo 24 horas, os alertas de ausência e escuridão ficam
+              desligados.
+            </p>
           </fieldset>
-          <fieldset>
+
+          <fieldset class="fields">
             <legend>Tempos e limites</legend>
-            <label
-              >Carência (min)<input name="graceMinutes" type="number" required
-            /></label>
-            <label
-              >Lembrete (min)<input
+            <label>
+              Carência (min)
+              <input
+                name="graceMinutes"
+                type="number"
+                inputmode="numeric"
+                required
+              />
+            </label>
+            <label>
+              Lembrete (min)
+              <input
                 name="reminderMinutes"
                 type="number"
+                inputmode="numeric"
                 required
-            /></label>
-            <label
-              >Consumo alto (kWh/dia)<input
+              />
+            </label>
+            <label>
+              Consumo alto (kWh/dia)
+              <input
                 name="highUsageKwhDay"
                 type="number"
+                inputmode="decimal"
                 step="0.1"
                 required
-            /></label>
+              />
+            </label>
           </fieldset>
+
           <fieldset>
             <legend>Alertas</legend>
-            <label class="check-row"
-              ><input type="checkbox" name="alertAbsence" /> Ausência</label
-            >
-            <label class="check-row"
-              ><input type="checkbox" name="alertDark" /> Escuridão</label
-            >
-            <label class="check-row"
-              ><input type="checkbox" name="alertOutsideSchedule" /> Fora do
-              horário</label
-            >
-            <label class="check-row"
-              ><input type="checkbox" name="alertHighUsage" /> Alto
-              consumo</label
-            >
+            <label class="check-row">
+              <input type="checkbox" name="alertAbsence" />
+              Ausência
+            </label>
+            <label class="check-row">
+              <input type="checkbox" name="alertDark" />
+              Escuridão
+            </label>
+            <label class="check-row">
+              <input type="checkbox" name="alertOutsideSchedule" />
+              Fora do horário
+            </label>
+            <label class="check-row">
+              <input type="checkbox" name="alertHighUsage" />
+              Alto consumo
+            </label>
           </fieldset>
+
           <button class="btn" type="submit" data-role="settings-btn">
-            Salvar
+            Salvar configurações
           </button>
           <p role="alert" class="error" data-role="settings-error"></p>
-          <p role="status" data-role="settings-success"></p>
+          <p role="status" class="success" data-role="settings-success"></p>
         </form>
-      </section>
+      </details>
     </main>
+
     <script type="module" src="./js/pages/painel.page.js"></script>
   </body>
 </html>
