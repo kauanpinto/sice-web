@@ -25,6 +25,7 @@ pushStatus.textContent = "Alertas ativados.";
 
 pushButton.addEventListener("click", async () => {
   pushButton.disabled = true;
+  pushStatus.textContent = "";
 
   try {
     if (pushEnabled) {
@@ -32,28 +33,23 @@ pushButton.addEventListener("click", async () => {
 
       pushEnabled = false;
       pushButton.textContent = "Ativar alertas";
-      pushStatus.textContent = "Alertas desativados.";
+      pushStatus.textContent = "Você não receberá mais notificações.";
     } else {
       await pushService.enablePush((notif) => {
-        pushStatus.textContent = notif.body;
+        pushStatus.textContent = notif?.body ?? "";
       });
 
       pushEnabled = true;
       pushButton.textContent = "Desativar alertas";
-      pushStatus.textContent = "Alertas ativados.";
+      pushStatus.textContent = "Notificações ativadas com sucesso!";
     }
   } catch (error) {
-    const messages = {
-      unsupported: "Seu navegador não suporta notificações.",
-      denied: "Permissão de notificações negada no navegador.",
-      "token-unavailable":
-        "Não foi possível localizar sua inscrição de notificações.",
-    };
-
-    document.querySelector('[data-role="push-status"]').textContent =
-      messages[error.message] ?? "Não foi possível alterar os alertas.";
+    pushStatus.textContent =
+      error.code === "network_error"
+        ? "Não foi possível conectar ao servidor."
+        : "Não foi possível alterar as notificações.";
   } finally {
-    btn.disabled = false;
+    pushButton.disabled = false;
   }
 });
 
