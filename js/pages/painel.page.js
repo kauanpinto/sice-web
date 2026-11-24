@@ -42,10 +42,18 @@ pushButton.addEventListener("click", async () => {
       pushButton.textContent = "Desativar alertas";
       pushStatus.textContent = "Alertas ativados.";
     }
-  } catch {
-    pushStatus.textContent = "Não foi possível alterar os alertas.";
+  } catch (error) {
+    const messages = {
+      unsupported: "Seu navegador não suporta notificações.",
+      denied: "Permissão de notificações negada no navegador.",
+      "token-unavailable":
+        "Não foi possível localizar sua inscrição de notificações.",
+    };
+
+    document.querySelector('[data-role="push-status"]').textContent =
+      messages[error.message] ?? "Não foi possível alterar os alertas.";
   } finally {
-    pushButton.disabled = false;
+    btn.disabled = false;
   }
 });
 

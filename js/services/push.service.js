@@ -9,40 +9,71 @@ import { auth } from "./firebase.js";
 import { config } from "../config/config.js";
 import { apiFetch } from "./api.service.js";
 
-async function enablePush(onForeground) {
+async function getPushContext() {
   if (!(await isSupported())) {
     throw new Error("unsupported");
   }
 
+  const registration = await navigator.serviceWorker.register(
+    "/firebase-messaging-sw.js",
+  );
+
+  const messaging = getMessaging(auth.app);
+
+  return { registration, messaging };
+}
+
+async function enablePush(onForeground) {
   const permission = await Notification.requestPermission();
 
   if (permission !== "granted") {
     throw new Error("denied");
   }
-  
-  const registration = await navigator.serviceWorker.register(
-    "/firebase-messaging-sw.js",
-  );
-  const messaging = getMessaging(auth.app);
+
+  const { registration, messaging } = await getPushContext();
+
   const token = await getToken(messaging, {
     vapidKey: config.vapidKey,
     serviceWorkerRegistration: registration,
   });
 
-  await apiFetch("/me/push-tokens", { method: "PUT", body: { token } });
+  if (!token) {
+    throw new Error("token-unavailable");
+  }
 
-  onMessage(messaging, (payload) => onForeground?.(payload.notification));
+  await apiFetch("/me/push-tokens", {
+    method: "PUT",
+    body: { token },
+  });
+
+  onMessage(messaging, (payload) => {
+    onForeground?.(payload.notification);
+  });
 
   return token;
 }
-async function disablePush() {
-  const messaging = getMessaging(auth.app);
-  const token = await getToken(messaging, { vapidKey: config.vapidKey });
 
-  if (token) {
-    await apiFetch("/me/push-tokens", { method: "DELETE", body: { token } });
-    await deleteToken(messaging);
+async function disablePush() {
+  const { registration, messaging } = await getPushContext();
+
+  const token = await getToken(messaging, {
+    vapidKey: config.vapidKey,
+    serviceWorkerRegistration: registration,
+  });
+
+  if (!token) {
+    throw new Error("token-unavailable");
   }
+
+  await apiFetch("/me/push-tokens", {
+    method: "DELETE",
+    body: { token },
+  });
+
+  await deleteToken(messaging);
 }
 
-export const pushService = { enablePush, disablePush };
+export const pushService = {
+  enablePush,
+  disablePush,
+};
