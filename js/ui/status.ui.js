@@ -8,22 +8,33 @@ const TEXT = {
   ambient: { dark: "Escuro", bright: "Claro", unknown: "Sem dados" },
 };
 
+const STATE = {
+  equipment: { on: "on", off: "off" },
+  presence: { detected: "on", not_detected: "off" },
+  ambient: { dark: "dark", bright: "on" },
+};
+
+function renderBlock(name, status) {
+  const block = document.querySelector(`[data-block="${name}"]`);
+
+  block.querySelector('[data-role="value"]').textContent =
+    TEXT[name][status[name]] ?? "--";
+  block.dataset.state = status.online
+    ? (STATE[name][status[name]] ?? "unknown")
+    : "unknown";
+}
+
 export function renderStatus(status) {
   const fmt = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 1 });
-  document.querySelector(
-    '[data-block="equipment"] [data-role="value"]',
-  ).textContent = TEXT.equipment[status.equipment] ?? "--";
+
+  for (const name of ["equipment", "presence", "ambient"]) {
+    renderBlock(name, status);
+  }
+
   document.querySelector(
     '[data-block="equipment"] [data-role="power"]',
   ).textContent = `${fmt.format(status.powerW ?? 0)} W`;
-  document.querySelector('[data-block="equipment"]').dataset.state =
-    status.equipment === "on" ? "on" : "off";
-  document.querySelector(
-    '[data-block="presence"] [data-role="value"]',
-  ).textContent = TEXT.presence[status.presence] ?? "--";
-  document.querySelector(
-    '[data-block="ambient"] [data-role="value"]',
-  ).textContent = TEXT.ambient[status.ambient] ?? "--";
+
   const badge = document.querySelector('[data-role="offline-badge"]');
 
   if (!status.online) {
